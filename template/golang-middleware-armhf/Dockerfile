@@ -17,9 +17,15 @@ RUN test -z "$(gofmt -l $(find . -type f -name '*.go' -not -path "./vendor/*" -n
 
 ARG GO111MODULE="off"
 ARG GOPROXY=""
+ARG GOFLAGS=""
 
+WORKDIR /go/src/handler/function
+
+RUN go test ./... -cover
+
+WORKDIR /go/src/handler
 RUN go build --ldflags "-s -w" -a -installsuffix cgo -o handler .
-RUN go test handler/function/... -cover
+
 
 FROM alpine:3.11
 # Add non root user and certs

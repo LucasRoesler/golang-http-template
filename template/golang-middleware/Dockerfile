@@ -42,6 +42,8 @@ COPY --from=build --chown=app /go/src/handler/handler    .
 COPY --from=build --chown=app /usr/bin/fwatchdog         .
 COPY --from=build --chown=app /go/src/handler/function/  .
 
+RUN chown -R app /home/app
+
 USER app
 
 ENV fprocess="./handler"

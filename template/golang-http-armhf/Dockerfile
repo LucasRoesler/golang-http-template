@@ -12,14 +12,22 @@ RUN mkdir -p /go/src/handler
 WORKDIR /go/src/handler
 COPY . .
 
+# Add user overrides to the root go.mod, which is the only place "replace" can be used
+RUN cat function/GO_REPLACE.txt >> ./go.mod || exit 0
+
 # Run a gofmt and exclude all vendored code.
 RUN test -z "$(gofmt -l $(find . -type f -name '*.go' -not -path "./vendor/*" -not -path "./function/vendor/*"))" || { echo "Run \"gofmt -s -w\" on your Golang code"; exit 1; }
 
 ARG GO111MODULE="off"
 ARG GOPROXY=""
+ARG GOFLAGS=""
 
+WORKDIR /go/src/handler/function
+
+RUN go test ./... -cover
+
+WORKDIR /go/src/handler
 RUN go build --ldflags "-s -w" -a -installsuffix cgo -o handler .
-RUN go test handler/function/... -cover
 
 FROM alpine:3.11
 # Add non root user and certs
